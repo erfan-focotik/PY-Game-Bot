@@ -1,0 +1,89 @@
+-- ============================================
+-- Game Bot Script Example
+-- Lua-like DSL for bot automation
+-- ============================================
+
+-- Configuration Variables (exposed to UI)
+-- These will appear in the configuration window before the bot starts
+
+expose_slider("attack_delay", 0.5, 2.0)
+expose_toggle("auto_loot")
+expose_dropdown("combat_mode", ["aggressive", "defensive", "passive"])
+
+-- ============================================
+-- Main Bot Logic
+-- ============================================
+
+log("Bot script started!")
+
+-- Initialize variables
+health_threshold = 30
+mana_threshold = 20
+enemy_count = 0
+
+-- Main loop
+while true do
+    
+    -- Check for enemies using vision
+    enemy = find_object("enemy", 0.75)
+    
+    if enemy then
+        log("Enemy detected at (" .. enemy.x .. ", " .. enemy.y .. ")")
+        
+        -- Move to enemy and attack
+        click_at(enemy.x, enemy.y, "left")
+        wait(0.1)
+        press_key("space", 0.2)  -- Attack key
+        
+        -- Wait based on configured delay
+        wait(get_config_value("attack_delay", 1.0))
+        
+    else
+        -- No enemy found, check for loot if enabled
+        if get_config_value("auto_loot", false) then
+            
+            loot = find_object("loot_item", 0.8)
+            if loot then
+                log("Loot detected, collecting...")
+                click_at(loot.x, loot.y, "right")
+                wait(0.5)
+            end
+        end
+        
+        -- Random wait to avoid detection
+        random_wait(0.5, 1.5)
+    end
+    
+    -- Check for text-based conditions (OCR)
+    if text_exists("LOW HEALTH", 0.8) then
+        log("Low health detected! Using potion...")
+        press_key("1", 0.1)  -- Health potion key
+        wait(1.0)
+    end
+    
+    if text_exists("LOW MANA", 0.8) then
+        log("Low mana detected! Using mana potion...")
+        press_key("2", 0.1)  -- Mana potion key
+        wait(1.0)
+    end
+    
+    -- Combat mode logic
+    mode = get_config_value("combat_mode", "passive")
+    
+    if mode == "aggressive" then
+        -- Aggressive: attack immediately
+        hold_key("shift")  -- Sprint modifier
+    elseif mode == "defensive" then
+        -- Defensive: keep distance
+        if enemy then
+            move_mouse(enemy.x + 200, enemy.y + 200, 0.2)
+        end
+    end
+    
+    -- Small delay between iterations
+    wait(0.05)
+    
+end
+
+-- This code is never reached due to infinite loop above
+log("Bot script ended.")
