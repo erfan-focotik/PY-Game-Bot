@@ -41,7 +41,7 @@ class GameBot:
         self.script_thread: Optional[threading.Thread] = None
         self.config_values = {}
 
-    def initialize(self, template_folder: str = 'assets/templates'):
+    def initialize(self, template_folder: str = 'assets/templates', enable_ocr: bool = True):
         """Initialize all bot components."""
         print("=== Initializing Game Bot ===")
         
@@ -51,11 +51,11 @@ class GameBot:
         # Initialize capture engine
         self.capture_engine = get_capture_engine(fps_target=60)
         
-        # Initialize vision pipeline
+        # Initialize vision pipeline (template matching only - no YOLO)
         self.vision_pipeline = get_vision_pipeline(
             template_folder=template_folder,
-            yolo_model_path=None,  # Set path to YOLO model if available
-            use_gpu=False
+            use_gpu=False,
+            enable_ocr=enable_ocr  # Set False to disable OCR for better performance
         )
         
         # Initialize scripting engine

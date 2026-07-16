@@ -50,6 +50,35 @@ expose_dropdown("combat_mode", ["aggressive", "defensive", "passive"])
 
 ## Vision Functions
 
+### How Object Detection Works
+
+The bot uses **template matching** for object detection. Here's how to set it up:
+
+1. **Create Template Images**: 
+   - Take a screenshot of the object you want to detect (enemy, item, etc.)
+   - Crop the image to show only that object
+   - Save it in the `assets/templates/` folder
+
+2. **Naming Convention**:
+   - The filename (without extension) becomes the object label
+   - Example: `enemy.png` → use label `"enemy"` in scripts
+   - Example: `health_potion.jpg` → use label `"health_potion"`
+
+3. **Multiple Templates**:
+   - You can have multiple template images with the same name
+   - All templates are tested when searching for that label
+   - Useful for different rotations or appearances of the same object
+
+4. **In Your Script**:
+```lua
+-- Search for enemy.png template on screen
+enemy = find_object("enemy", 0.75)  -- 0.75 = 75% confidence threshold
+
+if enemy then
+    log("Found enemy at: " .. enemy.x .. ", " .. enemy.y)
+end
+```
+
 ### find_object(label, min_confidence)
 Find an object by label in the latest vision results.
 ```lua
@@ -60,6 +89,10 @@ end
 ```
 Returns: `{x, y, bbox, confidence}` or `nil`
 
+**Parameters:**
+- `label`: Name of the template file (without extension)
+- `min_confidence`: Match threshold from 0.0 to 1.0 (recommended: 0.7-0.9)
+
 ### find_all_objects(label, min_confidence)
 Find all objects matching the label.
 ```lua
@@ -69,7 +102,7 @@ log("Found " .. #enemies .. " enemies")
 Returns: Array of detection objects
 
 ### read_text(region)
-Read text from screen (optional region).
+Read text from screen using OCR (optional region).
 ```lua
 texts = read_text()
 for _, text in ipairs(texts) do
@@ -78,8 +111,10 @@ end
 ```
 Returns: Array of `{text, confidence, bbox, position}`
 
+**Note:** OCR can be disabled in configuration for better performance if not needed.
+
 ### text_exists(pattern, min_confidence)
-Check if specific text exists on screen.
+Check if specific text exists on screen using OCR.
 ```lua
 if text_exists("LOW HEALTH", 0.8) then
     press_key("1", 0.1)

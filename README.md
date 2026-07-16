@@ -6,10 +6,10 @@ A high-performance, Windows-based game automation tool featuring a custom secure
 
 - **Custom Scripting Engine**: Lua-like DSL with sandboxed execution for secure bot automation
 - **High-Performance Screen Capture**: DXcam/D3DShot using Windows Desktop Duplication API (>60 FPS)
-- **Hybrid Vision Pipeline**: 
-  - Multi-scale template matching for static targets
-  - YOLO models (ONNX Runtime) for dynamic detection
-  - PaddleOCR for text recognition
+- **Efficient Vision Pipeline**: 
+  - Multi-scale template matching for object detection (CPU-based, lightweight)
+  - PaddleOCR for text recognition (optional, can be disabled for performance)
+  - No YOLO/ONNX dependencies - uses efficient template matching instead
 - **Dynamic UI Configuration**: Auto-generated configuration window based on script declarations
 - **In-Game Overlay**: Dear ImGui-based transparent overlay with pause/restart/quit controls
 - **Process Management**: Easy target game selection by name or PID
@@ -121,9 +121,8 @@ end
 
 ### Vision Pipeline (Consumer)
 - ThreadPoolExecutor for parallel processing
-- Template matching for known objects
-- YOLO (ONNX) for dynamic detection
-- PaddleOCR for text recognition
+- Template matching for object detection (replaces YOLO for efficiency)
+- PaddleOCR for text recognition (optional)
 - Results pushed to result queue
 
 ### Scripting Engine
@@ -195,19 +194,22 @@ Controls available via overlay or console:
 
 ## Development
 
-### Adding New Vision Models
+### Adding New Object Templates
 
-```python
-# In vision module
-yolo_detector = YOLODetector(model_path="models/yolov10n.onnx")
+Place template images in the `assets/templates/` folder:
+- File naming: `<object_label>.png` (e.g., "enemy.png", "loot_item.png")
+- The filename (without extension) becomes the label used in scripts
+- Multiple templates with same name are all tested for that label
+- Subdirectories are scanned recursively for organization
+
+Example:
+```bash
+# Create template for enemy detection
+# 1. Take screenshot of enemy icon in your game
+# 2. Crop to just the enemy icon
+# 3. Save as assets/templates/enemy.png
+# 4. In script: enemy = find_object("enemy", 0.75)
 ```
-
-### Custom Template Matching
-
-Place template images in folders:
-- `assets/templates/Boss/Target/` - Boss templates
-- `assets/templates/Items/` - Item templates
-- `assets/templates/UI/` - UI element templates
 
 ## License
 
